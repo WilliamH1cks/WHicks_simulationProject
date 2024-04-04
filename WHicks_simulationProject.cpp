@@ -1,11 +1,28 @@
 // WHicks_simulationProject.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include "queuingSystemADT.h"
 #include <iostream>
+#include <random>
+using namespace std;
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    int timeUnits, transTime, arrivalTime, numServers;
+    cout << "Input the length of the simulation, in units of time (use an integer): ";
+    cin >> timeUnits;
+    cout << endl << "Input the length of the customer-server transaction, in units of time (use an integer): ";
+    cin >> transTime;
+    cout << endl << "Input the average amount of time between customer arrivals, in units of time (use an integer): ";
+    cin >> arrivalTime;
+    cout << endl << "Input the number of servers to use (use an integer): ";
+    cin >> numServers;
+    cout << endl;
+
+    queuingSystem simulation(timeUnits, transTime, arrivalTime, numServers);
+    //queuingSystem.mainLoop();
+
+    return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

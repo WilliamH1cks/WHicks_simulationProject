@@ -129,6 +129,15 @@
   <ItemGroup>
     <ClCompile Include="WHicks_simulationProject.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="linkedList.h" />
+    <ClInclude Include="linkedQueue.h" />
+    <ClInclude Include="nodeType.h" />
+    <ClInclude Include="queueADT.h" />
+    <ClInclude Include="queueAsArray.h" />
+    <ClInclude Include="queuingSystemADT.h" />
+    <ClInclude Include="unorderedLinkedList.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
