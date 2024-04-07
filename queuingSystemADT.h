@@ -55,22 +55,28 @@ public:
 
 	int addCustomer(customer newPerson)
 	{
-		waitingQueue.addQueue(newPerson);
-		//cout << waitingQueue.front().getCustomerID() << endl;
-		numberOfArrivals++;
-		sizeOfQueue++;
-		//cout << waitingQueue.front().getCustomerID() << endl;
-		return newPerson.getCustomerID();
+		if (!isFullQueue())
+		{
+			waitingQueue.addQueue(newPerson);
+			//cout << waitingQueue.front().getCustomerID() << endl;
+			numberOfArrivals++;
+			sizeOfQueue++;
+			//cout << waitingQueue.front().getCustomerID() << endl;
+			return newPerson.getCustomerID();
+		}
 	}
 	//Precond: A new customer is created and a queue exists
 	//Postcond: The new customer is inserted at the end of the queue
 
 	customer removeCustomer()
 	{
-		customer currentCustomer = waitingQueue.front();
-		waitingQueue.deleteQueue();
-		sizeOfQueue--;
-		return currentCustomer;
+		if (!isEmptyQueue())
+		{
+			customer currentCustomer = waitingQueue.front();
+			waitingQueue.deleteQueue();
+			sizeOfQueue--;
+			return currentCustomer;
+		}
 	}
 	//Precond: A pre-existing, non-empty list exists
 	//Postcond: The front customer is removed from the queue and returned, to be used in a server
@@ -102,11 +108,11 @@ public:
 	//			the contents back to the original queue.
 	void updateCustomerWaittimes()
 	{
-		queue<customer> tempQueue;
+		customerQueue tempQueue;
 		int length = getNumCustomersInQueue();
 		for (int i = 0; i < length; i++)
 		{
-				customer current = waitingQueue.removeCustomer();
+				customer current = removeCustomer();
 				current.updateWaittime();
 				tempQueue.push(current);
 		};
@@ -259,13 +265,12 @@ public:
 	{
 		for (server current : list)
 		{
-			if (current.isServerBusy())
+			if (!current.isServerBusy())
 				return current.getServerID();
 			else
-				cout << "I see this as a free server." << endl;
+				cout << "I see this as a busy server." << endl;
 		}
 		return -1;
-
 	}
 
 	//Sets the initial transaction time for servers upon recieving a customer
@@ -277,10 +282,12 @@ public:
 	//Assigns customer to a free server
 	void assignCustomer(customer currCustomer, int servID)
 	{
+		cout << "Test Run: " << servID << endl;
 		for (server current : list)
 		{
 			if (current.getServerID() == servID)
 			{
+				cout << "Customer " << currCustomer.getCustomerID() << " is being assigned at Server " << servID << endl;
 				current.retrieveCustomer(currCustomer, serverTransTime);
 				return;
 			}
@@ -289,13 +296,11 @@ public:
 
 	//Precond: One time unit passes
 	//Postcond: Transaction times are updated for each server
-	int updateServerTimes()
+	void updateServerTimes()
 	{
 		for (server current : list)
 		{
-			cout << "Now:" << current.isServerBusy() << endl;
 			current.updateTransactionTime();
-			cout << "Time left at Server: " << current.getTransactionTime() << endl;
 			if (current.getTransactionTime() <= 0)
 			{
 				customersServed++;
@@ -307,11 +312,7 @@ public:
 			{
 				current.setIfBusy(true);
 			}
-			//cout << "Status: " << current.isServerBusy() << endl;
 		}
-		cout << "Customers Served: " << customersServed << endl;
-		int result = findFreeServer();
-		return result;
 	}
 
 	//Fetches total number of customers served
@@ -382,7 +383,8 @@ public:
 		for (int timeIndex = 0; timeIndex < timeUnits; timeIndex++)
 		{
 			cout << "Interval: " << timeIndex << endl;
-			int freeServ = list.updateServerTimes();
+			list.updateServerTimes();
+			int freeServ = list.findFreeServer();
 			if (queue.getNumCustomersInQueue() > 0)
 				queue.updateCustomerWaittimes();
 			if (queue.hasCustomerArrived())
@@ -391,6 +393,10 @@ public:
 				cout << "New customer: " << queue.addCustomer(newCust) << endl;
 			}
 			cout << "Free Server: " << freeServ << endl;
+			if (freeServ != -1)
+			{
+				list.assignCustomer(queue.removeCustomer(), freeServ);
+			}
 		}
 		printResults();
 	}
