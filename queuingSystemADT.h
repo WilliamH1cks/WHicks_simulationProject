@@ -15,7 +15,7 @@ public:
 		return;
 	}
 	//Sets the customer ID to a random value
-	int getCustomerID()
+	int getID()
 	{
 		return customerID;
 	}
@@ -69,7 +69,7 @@ public:
 			numberOfArrivals++;
 			sizeOfQueue++;
 			//cout << waitingQueue.front().getCustomerID() << endl;
-			return newPerson.getCustomerID();
+			return newPerson.getID();
 		}
 	}
 	//Precond: A new customer is created and a queue exists
@@ -188,14 +188,28 @@ public:
 	}
 
 	//Sets server status - true if busy
-	void setIfBusy(bool status)
+	//void setIfBusy(bool status)
+	//{
+	//	isBusy = status;
+	//}
+
+	//Sets the server to be busy
+	void setToBusy()
 	{
-		isBusy = status;
+		isBusy = true;
+	}
+
+	//Sets the server to be free
+	void setToFree()
+	{
+		isBusy = false;
 	}
 
 	//Fetches server status - true if busy
-	bool isServerBusy()
+	bool isServerFree()
 	{
+		if (isBusy)
+			cout << "Server " << getServerID() << " should be busy." << endl;
 		return isBusy;
 	}
 
@@ -212,46 +226,48 @@ public:
 	}
 
 	//Updates transaction time
-	int updateTransactionTime()
+	void updateTransactionTime()
 	{
 		cout << "Transaction Time: " << transactionTime << endl;
 		transactionTime--;
 		//setTransactionTime(transactionTime - 1);
-		if (transactionTime == 0)
-		{
-			isBusy = false;
-		}
-		cout << "Transaction Time: " << transactionTime << endl;
-		return transactionTime;
+		//if (transactionTime == 0)
+		//{
+		//	isBusy = false;
+		//}
+		//cout << "Transaction Time: " << transactionTime << endl;
+		//return transactionTime;
+		return;
 	}
 
 	//Gets customer's wait time
 	int getCustomerWaittime()
 	{
-		return current.getWaittime();
+		return currentCustomer.getWaittime();
 	}
 
 	//Gets customer ID
 	int getCustomerID()
 	{
-		//cout << "Current Customer: " << current.getCustomerID() << endl;
-		return current.getCustomerID();
+		cout << "Current Customer: " << currentCustomer.getID() << endl;
+		return currentCustomer.getID();
 	}
 
 	//Add customer to server
 	void retrieveCustomer(customer newGuy, int newTransTime)
 	{
 		//cout << transactionTime << endl;
-		if (!isServerBusy())
-			cout << "Server " << getServerID() << " currently has Customer " << getCustomerID() << endl;
-		else
-		{
-			current = newGuy;
+		//if (!isServerFree())
+		//	cout << "Server " << getServerID() << " currently has Customer " << newGuy.getID() << endl;
+		//else
+		//{
+			currentCustomer = newGuy;
 			setTransactionTime(newTransTime);
 			//cout << "Transaction Time: " << transactionTime << endl;
-			cout << "Customer Time: " << current.getWaittime() << endl;
-			setIfBusy(true);
-		}
+			cout << "Customer Time: " << newGuy.getWaittime() << endl;
+			setToBusy();
+			cout << "Server " << getServerID() << " sees Customer " << getCustomerID() << endl;
+		//}
 	}
 
 	//Constructor
@@ -266,7 +282,7 @@ private:
 	int serverID;
 	bool isBusy;
 	int transactionTime;
-	customer current;
+	customer currentCustomer;
 };
 
 class serverList
@@ -284,7 +300,7 @@ public:
 	{
 		for (server current : list)
 		{
-			if (!current.isServerBusy())
+			if (!current.isServerFree())
 				return current.getServerID();
 			//else
 				//cout << "I see this as a busy server." << endl;
@@ -306,8 +322,9 @@ public:
 		{
 			if (current.getServerID() == servID)
 			{
-				//cout << "Customer " << currCustomer.getCustomerID() << " is being assigned at Server " << servID << endl;
+				cout << "Customer " << currCustomer.getID() << " is being assigned at Server " << servID << endl;
 				current.retrieveCustomer(currCustomer, serverTransTime);
+				current.setToBusy();
 				return;
 			}
 		}
@@ -319,18 +336,27 @@ public:
 	{
 		for (server current : list)
 		{
-			current.setTransactionTime(current.updateTransactionTime());
-			if (current.getTransactionTime() <= 0)
+			cout << "SERVER " << current.getServerID() << endl;
+			//if (!current.isServerFree())
+			while(!current.isServerFree() && current.getTransactionTime() > 0)
 			{
-				customersServed++;
-				totalWaittime += current.getCustomerWaittime();
-				current.setIfBusy(false);
-				cout << "Customer " << current.getCustomerID() << " departs Server " << current.getServerID() << endl;
+				cout << "THE SERVER IS BUSY!!!" << endl;
+				current.updateTransactionTime();
+				//cout << "Test: " << current.getTransactionTime() << endl;
+				if (current.getTransactionTime() == 0)
+				{
+					customersServed++;
+					totalWaittime += current.getCustomerWaittime();
+					cout << "This customer's waittime: " << current.getCustomerWaittime() << endl;
+					current.setToFree();
+					cout << "Customer " << current.getCustomerID() << " departs Server " << current.getServerID() << endl;
+				}
 			}
-			else //else statement used for testing/debugging
-			{
-				current.setIfBusy(true);
-			}
+			//else //else statement used for testing/debugging
+			//{
+			//	current.setToBusy();
+			//}
+			//cout << "Test: " << current.getTransactionTime() << endl;
 		}
 	}
 
@@ -401,14 +427,14 @@ public:
 	{
 		for (int timeIndex = 0; timeIndex < timeUnits; timeIndex++)
 		{
-			cout << "Interval: " << timeIndex << endl;
+			cout << endl << "Interval: " << timeIndex << endl;
 			list.updateServerTimes();
 			int freeServ = list.findFreeServer();
 			if (queue.getNumCustomersInQueue() > 0)
 				queue.updateCustomerWaittimes();
 			if (queue.hasCustomerArrived())
 			{
-				customer newCust;
+				customer newCust(queue.getNumArrivals() + 1, 0);
 				cout << "New customer: " << queue.addCustomer(newCust) << endl;
 				//cout << "Customer ID: " << queue.removeCustomer().getCustomerID() << endl;
 			}
@@ -418,6 +444,7 @@ public:
 				customer nextCustomer = queue.removeCustomer();
 				//cout << "Customer " << nextCustomer.getCustomerID() << " to Server " << freeServ << endl;
 				list.assignCustomer(nextCustomer, freeServ);
+				cout << "Current serving customer: " << nextCustomer.getID() << endl;
 			}
 		}
 		printResults();
