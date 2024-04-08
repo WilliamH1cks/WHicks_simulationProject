@@ -258,7 +258,7 @@ public:
 	{
 		//cout << transactionTime << endl;
 		//if (!isServerFree())
-		//	cout << "Server " << getServerID() << " currently has Customer " << newGuy.getID() << endl;
+		//	cout << "Server currently has Customer " << newGuy.getID() << endl;
 		//else
 		//{
 			currentCustomer = newGuy;
