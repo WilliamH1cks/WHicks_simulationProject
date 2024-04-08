@@ -73,6 +73,7 @@ public:
 		if (!isEmptyQueue())
 		{
 			customer currentCustomer = waitingQueue.front();
+			cout << "Customer " << currentCustomer.getCustomerID() << " has left the queue." << endl;
 			waitingQueue.deleteQueue();
 			sizeOfQueue--;
 			return currentCustomer;
@@ -113,6 +114,7 @@ public:
 		for (int i = 0; i < length; i++)
 		{
 				customer current = removeCustomer();
+				//cout << current.getCustomerID() << endl;
 				current.updateWaittime();
 				tempQueue.push(current);
 		};
@@ -202,7 +204,7 @@ public:
 	//Updates transaction time
 	void updateTransactionTime()
 	{
-		cout << "Transaction Time: " << transactionTime << endl;
+		//cout << "Transaction Time: " << transactionTime << endl;
 		transactionTime--;
 		//setTransactionTime(newTime);
 		if (transactionTime == 0)
@@ -221,6 +223,7 @@ public:
 	//Gets customer ID
 	int getCustomerID()
 	{
+		//cout << "Current Customer: " << current.getCustomerID() << endl;
 		return current.getCustomerID();
 	}
 
@@ -267,8 +270,8 @@ public:
 		{
 			if (!current.isServerBusy())
 				return current.getServerID();
-			else
-				cout << "I see this as a busy server." << endl;
+			//else
+				//cout << "I see this as a busy server." << endl;
 		}
 		return -1;
 	}
@@ -282,7 +285,7 @@ public:
 	//Assigns customer to a free server
 	void assignCustomer(customer currCustomer, int servID)
 	{
-		cout << "Test Run: " << servID << endl;
+		//cout << "Test Run: " << servID << endl;
 		for (server current : list)
 		{
 			if (current.getServerID() == servID)
@@ -391,11 +394,14 @@ public:
 			{
 				customer newCust;
 				cout << "New customer: " << queue.addCustomer(newCust) << endl;
+				//cout << "Customer ID: " << queue.removeCustomer().getCustomerID() << endl;
 			}
-			cout << "Free Server: " << freeServ << endl;
-			if (freeServ != -1)
+			//cout << "Free Server: " << freeServ << endl;
+			if (freeServ != -1 && queue.getNumCustomersInQueue() > 0)
 			{
-				list.assignCustomer(queue.removeCustomer(), freeServ);
+				customer nextCustomer = queue.removeCustomer();
+				cout << "Customer " << nextCustomer.getCustomerID() << " to Server " << freeServ << endl;
+				list.assignCustomer(nextCustomer, freeServ);
 			}
 		}
 		printResults();
